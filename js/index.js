@@ -1,337 +1,878 @@
 var isX = true;
-var isValid = false;
+var playerCanMove = false;
+var player2CanMove = false;
 var cells = [];
 var player = 1;
 var computer = 0;
-var onMove = 1;
+var onMove = 1; // not necessarily need to have initial val
 var result = "";
-var intervalId;
+var againstAI = false;
+var gameSize = 3;
+var lastMoveX = 0; //j
+var lastMoveY = 0; //i
+var pointsToWin = 3;
 
-$(document).ready(function(){
+$(document).ready(function () {
 
 
-  $( "#dialog-confirm" ).dialog({
-      resizable: false,
-      height:140,
-      modal: true,
-      buttons: {
-        "X": function() {
-          isX = true;
-          $( this ).dialog( "close" );
-          startGame();
+    $("#dialog-confirm").dialog({
+        resizable: false,
+        height: 380,
+        width: 380,
+        modal: true,
+        buttons: {
+            "Brown": {
+                click: function () {
+                isX = true;
+                gameSize = $('#tableSize').val();
+                pointsToWin = gameSize > 5 ? 5 : gameSize;
+                // if($("#radio-2").prop('checked')){
+                //     againstAI = true;
+                // }else{
+                //     againstAI = false;
+                // }
+                populateTable(gameSize);
+                $("#restartButton").show();
+                $(this).dialog("close");
+                startGame();
+                },
+                text: 'Brown',
+                class: 'brownCell'
         },
-        "O": function() {
-          isX = false;
-          $( this ).dialog( "close" );
-          startGame();
+            "Green": {
+                click: function () {
+                isX = false;
+                gameSize = $('#tableSize').val();
+                pointsToWin = gameSize > 5 ? 5 : gameSize;
+                // if($("#radio-2").prop('checked')){
+                //     againstAI = true;
+                // }else{
+                //     againstAI = false;
+                // }
+                populateTable(gameSize);
+                $("#restartButton").show();
+                $(this).dialog("close");
+                startGame();
+                },
+                text: 'Green',
+                class: 'greenCell'
+            }
         }
-      }
     });
+
+    $("#restartButton").click(function(){
+        $("#dialog-confirm").dialog({
+            resizable: false,
+            height: 380,
+            width: 380,
+            modal: true,
+            buttons: {
+                "Brown": {
+                    click: function () {
+                    isX = true;
+                    gameSize = $('#tableSize').val();
+                    pointsToWin = gameSize > 5 ? 5 : gameSize;
+                    // if($("#radio-2").prop('checked')){
+                    //     againstAI = true;
+                    // }else{
+                    //     againstAI = false;
+                    // }
+                    populateTable(gameSize);
+                    $(this).dialog("close");
+                    result = "";
+                    startGame();
+                    },
+                    text: 'Brown',
+                    class: 'brownCell'
+            },
+                "Green": {
+                    click: function () {
+                    isX = false;
+                    gameSize = $('#tableSize').val();
+                    pointsToWin = gameSize > 5 ? 5 : gameSize;
+                    // if($("#radio-2").prop('checked')){
+                    //     againstAI = true;
+                    // }else{
+                    //     againstAI = false;
+                    // }
+                    populateTable(gameSize);
+                    $(this).dialog("close");
+                    result = "";
+                    startGame();
+                    },
+                    text: 'Green',
+                    class: 'greenCell'
+                }
+            }
+        });
+    })
 });
 
-function startGame(){
-  emptyCells();
-  if(isX){
-    player = 1;
-    computer = 0;
-  }else{
-    player = 0;
-    computer = 1;
-  }
+// function populateTable(tableSize) {
+//     $('#gameTable').empty();
+//     for (var i = 0; i < tableSize; i++) {
+//         $('#gameTable').append('<div class="row rowTable"></div>');
+//     }
+//     $('.rowTable').each(function (index) {
+//         for (var j = 0; j < tableSize; j++) {
 
-  var rnd = Math.round(Math.random());
-    if(rnd === 1){
-      onMove = player;
+//             var boxDiv = $('<div class="cell"></div>');
+//             boxDiv.css('width', ($(window).height()/tableSize)/2+"px");
+//             boxDiv.css('height', ($(window).height()/tableSize)/2+"px");
+//             $(this).append(boxDiv);
+//             var boxId = "c" + (index + 1) + (j + 1);
+//             boxDiv.attr('id', boxId);
+//         }
+//     });
+// }
+
+function populateTable(tableSize) {
+    $('#gameTable').empty();
+    $('#gameTable').append('<table id="tableStructure"></table>');
+    for (var i = 0; i < tableSize; i++) {
+        $('#tableStructure').append('<tr class="rowTable"></tr>');
+    }
+    $('.rowTable').each(function (index) {
+        for (var j = 0; j < tableSize; j++) {
+
+            var boxDiv = $('<td class="cell"></div>');
+            boxDiv.css('padding', ($(window).height() / tableSize) / 3 + "px");
+            $(this).append(boxDiv);
+            var boxId = "c" + (index + 1) + (j + 1);
+            boxDiv.attr('id', boxId);
+            var boxIndexI = (index);
+            boxDiv.attr('indexi', boxIndexI);
+            var boxIndexJ = (j);
+            boxDiv.attr('indexj', boxIndexJ);
+        }
+    });
+}
+
+function startGame() {
+    resetGame();
+    if (isX) { //determine gender
+        player = 1;
+        computer = 0;
+    } else {
+        player = 0;
+        computer = 1;
+    }
+    $(".cell").on("click", function () {
+        var validMove = false;
+        if (playerCanMove) {
+            //var sign = player === 0 ? "O" : "X";
+            var sign = player === 0 ? "greenCell" : "brownCell";
+            var i = $(this).attr("indexi");
+            var j = $(this).attr("indexj");
+            if (cells[i][j] === -1) {
+                cells[i][j] = player;
+                lastMoveY = i;
+                lastMoveX = j;
+                //$(this).html(sign);
+                $(this).addClass(sign);
+                //playerCanMove = false;
+                //winner = winnerIs();
+                // if (!whoWon(cells)) { // TODO make a variable , no passing var
+                //     onMove = computer;
+                // }
+                validMove = true;
+            }else{
+
+            }
+        } else if (player2CanMove) {
+
+            //var sign = player === 0 ? "X" : "O";
+            var sign = player === 0 ? "brownCell" : "greenCell";
+            var i = $(this).attr("indexi");
+            var j = $(this).attr("indexj");
+            if (cells[i][j] === -1) {
+                cells[i][j] = computer;
+                lastMoveY = i;
+                lastMoveX = j;
+                //$(this).html(sign);
+                $(this).addClass(sign);
+                //player2CanMove = false;
+                //winner = winnerIs();
+                // if (!whoWon(cells)) { // TODO make a variable , no passing var
+                //     onMove = computer;
+                // }
+                validMove = true;
+            }
+        }
+
+        if (result == "" && validMove) {
+            winner = winnerIs();
+            if (winner === player) {
+                alert("Player 1 Won");
+                result = "Player 1";
+                $(".highlighted").css("backdrop-filter", "brightness(0.7)");
+                stopMoving();
+            } else if (winner === computer) {
+                alert("Player 2 Won");
+                result = "Player 2";
+                $(".highlighted").css("backdrop-filter", "brightness(0.7)");
+                stopMoving();
+            } else if (isTableFull(cells)) {
+                result = "Draw";
+                alert("Match Is " + result);
+                stopMoving();
+            } else {
+                if (playerCanMove) {
+                    //alert("player move false");
+                    playerCanMove = false;
+                    if(againstAI){
+                        computerMove();
+                    }else{
+                        player2CanMove = true;
+                        $("#turnTable").html("Player 2's Turn'");
+                    }
+                } else {
+                    playerCanMove = true;
+                    player2CanMove = false;
+                    $("#turnTable").html("Player 1's Turn'");
+                }
+                //computerMove();
+            }
+        }
+
+    });
+
+    var rnd = Math.round(Math.random());
+    if (rnd === 1) {
+        //onMove = player;
+        playerCanMove = true;
+        $("#turnTable").html("Player 1's Turn'");
+    } else {
+        //onMove = computer;
+        if(againstAI){
+            computerMove();
+        }else{
+            player2CanMove = true;
+            $("#turnTable").html("Player 2's Turn'");
+        }
+        
+        //computerMove();
+    }
+
+
+    //intervalId = setInterval(loop, 1000);
+
+
+}
+
+function stopMoving() {
+    playerCanMove = false;
+    player2CanMove = false;
+}
+
+//function loop() {
+
+// if (onMove === player) {
+//     playerCanMove = true;
+// } else {
+//     computerMove();
+//     //onMove = player;
+//     playerCanMove = true;
+// }
+// if(!playerCanMove){
+//     computerMove();
+// }
+// var winner = "";
+
+// $(".cell").on("click", function () {
+//     if (playerCanMove) {
+
+//         var sign = player === 0 ? "O" : "X";
+
+//         var i = $(this).attr("id")[1] - 1;
+//         var j = $(this).attr("id")[2] - 1;
+//         if (cells[i][j] === -1) {
+//             cells[i][j] = player;
+//             lastMoveY = i;
+//             lastMoveX = j;
+//             $(this).html(sign);
+//             playerCanMove = false;
+//             winner = winnerIs();
+//             // if (!whoWon(cells)) { // TODO make a variable , no passing var
+//             //     onMove = computer;
+//             // }
+//             if(winner !== player){
+//                 //onMove = computer;
+//                 computerMove();
+//             }else if(winner === player){
+//                 alert("Congratulation!! You Won");
+//                 result = "Player Won";
+//                 cells = [];
+//                 clearTable();
+//                 $("#dialog-confirm").dialog({
+//                     resizable: false,
+//                     height: 280,
+//                     modal: true,
+//                     buttons: {
+//                         "X": function () {
+//                             isX = true;
+//                             gameSize = $('#tableSize').val();
+//                             if (gameSize !== 3) {
+//                                 populateTable(gameSize);
+//                             }
+//                             $(this).dialog("close");
+//                             startGame();
+//                         },
+//                         "O": function () {
+//                             isX = false;
+//                             gameSize = $('#tableSize').val();
+//                             if (gameSize !== 3) {
+//                                 populateTable(gameSize);
+//                             }
+//                             $(this).dialog("close");
+//                             startGame();
+//                         }
+//                     }
+//                 });
+//             }else if (isTableFull(cells)) {
+//                 result = "Draw";
+//                 alert("Match Is " + result);
+//             }
+//         }
+//     }
+// });
+
+
+
+//var winner = whoWon(cells);
+// winner = winnerIs();
+// if (winner == computer) {
+//     alert("You Lost, Better Luck Next Time");
+//     result = "Computer Won";
+// }else if(winner == player){
+//     alert("Congratulation!! You Won");
+//     result = "Player Won";
+// }else if (isTableFull(cells)) {
+//     result = "Draw";
+//     alert("Match Is " + result);
+// }
+
+// if (result !== "") {
+//     clearInterval(intervalId);
+//     result = "";
+//     cells = [];
+//     clearTable();
+//     startGame();
+// }
+//}
+
+
+function isTableFull(cells) {
+    for (var i in cells) { // can be replaced by a counter that go up every move until counts as table size, instead of looping
+        for (var j in cells[i]) {
+            if (cells[i][j] === -1) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+function winnerIs() {
+    var winCounter = 1;
+    var temp = cells[lastMoveY][lastMoveX]; //cells i,j
+    console.log("temp =" + temp);
+    console.log(cells);
+    console.log("last y " + lastMoveY);
+    console.log("last x " + lastMoveX);
+    var currentCountY = parseInt(lastMoveY);
+    var currentCountX = parseInt(lastMoveX);
+    var match = true;
+    //check vertical
+    while (currentCountY > 0 && match) {
+        if (cells[currentCountY - 1][currentCountX] == temp) {
+            currentCountY = currentCountY - 1; //move up
+            console.log("move up");
+        } else {
+            match = false;
+        }
+    }
+    match = true;
+    console.log("current count y " + currentCountY);
+    while (currentCountY < gameSize - 1 && match) {
+        console.log(cells);
+        console.log("y " + currentCountY);
+        console.log("X " + currentCountX);
+        console.log(cells[currentCountY + 1][currentCountX]);
+        $("td[indexi=" + currentCountY+"][indexj="+currentCountX+"]").addClass("highlighted");
+        if (cells[currentCountY + 1][currentCountX] == temp) {
+            winCounter++;
+            currentCountY = currentCountY + 1; //count down
+            console.log("count down" + winCounter);
+            $("td[indexi=" + currentCountY+"][indexj="+currentCountX+"]").addClass("highlighted");
+        } else {
+            match = false;
+        }
+        if (winCounter == pointsToWin) {
+            if (temp == player) {
+                console.log("player win vertical");
+                return player;
+            } else if (temp == computer) {
+                console.log("computer win vertical");
+                return computer;
+            }
+        }
+    }
+    match = true;
+    winCounter = 1;
+    currentCountY = parseInt(lastMoveY);
+    currentCountX = parseInt(lastMoveX);
+    $(".highlighted").removeClass("highlighted");
+    //check horizontal
+    while (currentCountX > 0 && match) {
+        if (cells[currentCountY][currentCountX - 1] == temp) {
+            currentCountX = currentCountX - 1; //move left
+            console.log("move left");
+        } else {
+            match = false;
+        }
+    }
+    match = true;
+    while (currentCountX < gameSize - 1 && match) {
+        $("td[indexi=" + currentCountY+"][indexj="+currentCountX+"]").addClass("highlighted");
+        if (cells[currentCountY][currentCountX + 1] == temp) {
+            winCounter++;
+            currentCountX = currentCountX + 1; //count right
+            console.log("count right" + winCounter);
+            $("td[indexi=" + currentCountY+"][indexj="+currentCountX+"]").addClass("highlighted");
+        } else {
+            match = false;
+        }
+        if (winCounter == pointsToWin) {
+            if (temp == player) {
+                console.log("player win horizontal");
+                return player;
+            } else if (temp == computer) {
+                console.log("computer win horizontal");
+                return computer;
+            }
+        }
+    }
+    match = true;
+    winCounter = 1;
+    currentCountY = parseInt(lastMoveY);
+    currentCountX = parseInt(lastMoveX);
+    $(".highlighted").removeClass("highlighted");
+
+    //check diagonal 1
+    while (currentCountX > 0 && currentCountY > 0 && match) {
+        if (cells[currentCountY - 1][currentCountX - 1] == temp) {
+            currentCountX = currentCountX - 1; //move left
+            currentCountY = currentCountY - 1; //move up
+            console.log("move left up");
+        } else {
+            match = false;
+        }
+    }
+    match = true;
+    while (currentCountX < gameSize - 1 && currentCountY < gameSize - 1 && match) {
+        console.log("y " + currentCountY);
+        console.log("x " + currentCountX);
+        $("td[indexi=" + currentCountY+"][indexj="+currentCountX+"]").addClass("highlighted");
+        if (cells[currentCountY + 1][currentCountX + 1] == temp) {
+            winCounter++;
+            currentCountX = currentCountX + 1; //count right
+            currentCountY = currentCountY + 1; //count down
+            console.log("count down right" + winCounter);
+            $("td[indexi=" + currentCountY+"][indexj="+currentCountX+"]").addClass("highlighted");
+        } else {
+            match = false;
+        }
+        if (winCounter == pointsToWin) {
+            if (temp == player) {
+                console.log("player win diagonal");
+                return player;
+            } else if (temp == computer) {
+                console.log("computer win diagonal");
+                return computer;
+            }
+        }
+    }
+    match = true;
+    winCounter = 1;
+    currentCountY = parseInt(lastMoveY);
+    currentCountX = parseInt(lastMoveX);
+    $(".highlighted").removeClass("highlighted");
+
+    //check diagonal 2
+    while (currentCountX > 0 && currentCountY < gameSize - 1 && match) {
+        if (cells[currentCountY + 1][currentCountX - 1] == temp) {
+            currentCountX = currentCountX - 1; //move left
+            currentCountY = currentCountY + 1; //move down
+            console.log("move 2");
+        } else {
+            match = false;
+        }
+    }
+    match = true;
+    while (currentCountX < gameSize - 1 && currentCountY > 0 && match) {
+        $("td[indexi=" + currentCountY+"][indexj="+currentCountX+"]").addClass("highlighted");
+        if (cells[currentCountY - 1][currentCountX + 1] == temp) {
+            winCounter++;
+            currentCountX = currentCountX + 1; //count right
+            currentCountY = currentCountY - 1; //count up
+            console.log("count " + winCounter);
+            $("td[indexi=" + currentCountY+"][indexj="+currentCountX+"]").addClass("highlighted");
+        } else {
+            match = false;
+        }
+        if (winCounter == pointsToWin) {
+            if (temp == player) {
+                console.log("player win diagonal");
+                return player;
+            } else if (temp == computer) {
+                console.log("computer win diagonal");
+                return computer;
+            }
+        }
+    }
+    $(".highlighted").removeClass("highlighted");
+}
+
+// function whoWon(cells) {
+//     for (var i in cells) { // TODO improve algorithm
+//         if (cells[i][0] !== -1 &&
+//             cells[i][1] !== -1 &&
+//             cells[i][2] !== -1 &&
+//             cells[i][0] === cells[i][1] && cells[i][0] === cells[i][2]) {
+//             if (cells[i][0] === player) {
+//                 return "player";
+//             }
+//             else {
+//                 return "computer";
+//             }
+//         }
+//     }
+//     for (var i in cells) {
+//         if (cells[0][i] !== -1 &&
+//             cells[1][i] !== -1 &&
+//             cells[2][i] !== -1 &&
+//             cells[0][i] === cells[1][i] && cells[0][i] === cells[2][i]) {
+//             if (cells[0][i] === player) {
+//                 return "player";
+//             }
+//             else {
+//                 return "computer";
+//             }
+//         }
+//     }
+
+//     if ((cells[0][0] !== -1 &&
+//         cells[1][1] !== -1 &&
+//         cells[2][2] !== -1 &&
+//         cells[0][0] === cells[1][1] &&
+//         cells[0][0] === cells[2][2]) ||
+//         (cells[0][2] !== -1 &&
+//             cells[1][1] !== -1 &&
+//             cells[2][0] !== -1 &&
+//             cells[0][2] === cells[1][1] &&
+//             cells[0][2] === cells[2][0])) {
+//         if (cells[1][1] === player) {
+//             return "player";
+//         }
+//         else {
+//             return "computer";
+//         }
+//     }
+
+//     return false;
+// }
+
+
+
+function computerMove() {
+    //alert("AI's turn");
+    var moved = false;
+    var sign = player === 0 ? "brownCell" : "greenCell";
+    lastMoveY = parseInt(lastMoveY);
+    lastMoveX = parseInt(lastMoveX);
+    while(!moved){
+        var whichWay = Math.floor(Math.random() * 9);
+        //console.log($("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]"));
+        if(whichWay == 0){
+            if(lastMoveY > 0 && cells[lastMoveY - 1][lastMoveX] === -1){
+                cells[lastMoveY - 1][lastMoveX] = computer;
+                lastMoveY = lastMoveY - 1;
+                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                moved = true;
+            }
+        }else if(whichWay == 1){
+            if(lastMoveY > 0 && lastMoveX < gameSize - 1 && cells[lastMoveY - 1][lastMoveX + 1] === -1){
+                cells[lastMoveY - 1][lastMoveX + 1] = computer;
+                lastMoveY = lastMoveY - 1;
+                lastMoveX = lastMoveX + 1;
+                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                moved = true;
+            }
+        }else if(whichWay == 2){
+            if(lastMoveX < gameSize - 1 && cells[lastMoveY][lastMoveX + 1] === -1){
+                cells[lastMoveY][lastMoveX + 1] = computer;
+                lastMoveX = lastMoveX + 1;
+                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                moved = true;
+            }
+        }else if(whichWay == 3){
+            if(lastMoveY < gameSize - 1 && lastMoveX < gameSize - 1 && cells[lastMoveY + 1][lastMoveX + 1] === -1){
+                cells[lastMoveY + 1][lastMoveX + 1] = computer;
+                lastMoveY = lastMoveY + 1;
+                lastMoveX = lastMoveX + 1;
+                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                moved = true;
+            }
+        }else if(whichWay == 4){
+            if(lastMoveY < gameSize - 1 && cells[lastMoveY + 1][lastMoveX] === -1){
+                cells[lastMoveY + 1][lastMoveX] = computer;
+                lastMoveY = lastMoveY + 1;
+                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                moved = true;
+            }
+        }else if(whichWay == 5){
+            if(lastMoveY < gameSize - 1 && lastMoveX > 0 && cells[lastMoveY + 1][lastMoveX - 1] === -1){
+                cells[lastMoveY + 1][lastMoveX - 1] = computer;
+                lastMoveY = lastMoveY + 1;
+                lastMoveX = lastMoveX - 1;
+                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                moved = true;
+            }
+        }else if(whichWay == 6){
+            if(lastMoveX > 0 && cells[lastMoveY][lastMoveX - 1] === -1){
+                cells[lastMoveY][lastMoveX - 1] = computer;
+                lastMoveX = lastMoveX - 1;
+                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                moved = true;
+            }
+        }else if(whichWay == 7){
+            if(lastMoveX > 0 && lastMoveY > 0 && cells[lastMoveY - 1][lastMoveX - 1] === -1){
+                cells[lastMoveY - 1][lastMoveX - 1] = computer;
+                lastMoveY = lastMoveY - 1;
+                lastMoveX = lastMoveX - 1;
+                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                moved = true;
+            }
+        }else if(whichWay > 7){
+            var arr = freeCells();
+            var x = Math.floor(Math.random() * arr.length);
+            console.log("freecell "+x);
+            if (arr.length >= 1) { // random move
+                var i = arr[x][0];
+                var j = arr[x][1];
+                console.log("random "+ i);
+                console.log("random "+ j);
+                cells[i][j] = computer;
+                lastMoveY = i;
+                lastMoveX = j;
+                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                moved = true;
+            }
+        }
+
+        
+    }
+    
+    winner = winnerIs();
+    if (winner === computer) {
+        alert("You Lost, Better Luck Next Time");
+        result = "Computer Won";
+    } else if (isTableFull(cells)) {
+        result = "Draw";
+        alert("Match Is " + result);
+    } else {
+        playerCanMove = true;
+    }
+
+
+    // var arr = freeCells();
+    // var arr2 = bestMove();
+    // var sign = computer === 0 ? "O" : "X";
+    // var x = Math.round(Math.random() * arr.length);
+
+    // if (arr2.length >= 1) { // there is a best move
+    //     var i = arr2[0];
+    //     var j = arr2[1];
+    // } else if (arr.length >= 1) { // random move
+    //     var i = arr[x][0];
+    //     var j = arr[x][1];
+    // }
+    // if ((arr.length >= 1 || arr2.length >= 1) && cells[i][j] === -1) {
+    //     var a = parseInt(i) + 1;
+    //     var b = parseInt(j) + 1;
+    //     lastMoveY = parseInt(i);
+    //     lastMoveX = parseInt(j);
+    //     $("#c" + a + b).html(sign);
+    //     // console.log("+++");
+    //     // console.log('i = '+i);
+    //     // console.log('j = '+j);
+    //     cells[i++][j++] = computer; //TODO assign to last move ??
+    //     winner = winnerIs();
+
+    //     if (winner === computer) {
+    //         //alert("You Lost, Better Luck Next Time");
+    //         result = "Computer Won";
+    //     } else if (isTableFull(cells)) {
+    //         result = "Draw";
+    //         alert("Match Is " + result);
+    //     } else {
+    //         playerCanMove = true;
+    //     }
+
+    //     //return 0;
+    // }
+
+}
+
+function freeCells() {
+    var arr = [];
+    for (var i in cells) {
+        for (var j in cells[i]) {
+            if (cells[i][j] === -1) {
+                arr.push([i, j]);
+            }
+        }
+    }
+    return arr;
+}
+
+function bestMove() { // TODO change the '2' counter to highest counter
+    var computerInLine = 0;
+    var playerInLine = 0;
+    var a = 0;
+    var maybe = null;
+    //check rows
+    for (var i in cells) {
+        for (var j in cells[i]) {
+            if (cells[i][j] !== -1) {
+                if (cells[i][j] === computer) {
+                    computerInLine++;
+                } else {
+                    playerInLine++;
+                }
+            } else {
+                a = j;
+            }
+        }
+        if (computerInLine === 2 && a !== 0) {
+            return [i, a];
+        } else if (playerInLine === 2 && a !== 0) {
+            maybe = [i, a];
+        }
+        a = 0;
+        computerInLine = 0;
+        playerInLine = 0;
+    }
+
+    //check columns
+
+    for (var j in cells) {
+        for (var i in cells[i]) {
+            if (cells[i][j] !== -1) {
+                if (cells[i][j] === computer) {
+                    computerInLine++;
+                } else {
+                    playerInLine++;
+                }
+            } else {
+                a = i;
+            }
+        }
+        if (computerInLine === 2 && a !== 0) {
+            return [a, j];
+        } else if (playerInLine === 2 && a !== 0) {
+            maybe = [a, j];
+        }
+        a = 0;
+        computerInLine = 0;
+        playerInLine = 0;
+    }
+
+    //check diagonals
+    var h = 0;
+    a = -1;
+    var b = -1;
+    playerInLine = 0;
+    computerInLine = 0;
+    for (var k = 0; k < 3; k++) {
+        if (cells[k][h] !== -1) {
+            if (cells[k][h] === computer) {
+                computerInLine++;
+            } else {
+                playerInLine++;
+            }
+        } else {
+            a = k;
+            b = h;
+        }
+
+        if (computerInLine === 2 && a !== -1 && b !== -1) {
+            return [a, b];
+        } else if (playerInLine === 2 && a !== -1 && b != -1) {
+            maybe = [a, b];
+        }
+
+        h++;
+    }
+
+    h = 0;
+    a = -1;
+    b = -1;
+    playerInLine = 0;
+    computerInLine = 0;
+
+    for (var k = 2; k >= 0; k--) {
+        if (cells[k][h] !== -1) {
+            if (cells[k][h] === computer) {
+                computerInLine++;
+            } else {
+                playerInLine++;
+            }
+        } else {
+            a = k;
+            b = h;
+        }
+
+        if (computerInLine === 2 && a !== -1 && b !== -1) {
+            return [a, b];
+        } else if (playerInLine === 2 && a !== -1 && b != -1) {
+            maybe = [a, b];
+        }
+
+        h++;
+    }
+
+
+
+    if (maybe !== null) return maybe;
+
+    return [];
+}
+
+// function clearTable() { //TODO DELETE CHILD
+//     for (var a = 1; a <= 3; a++) {
+//         for (var b = 1; b <= 3; b++) {
+//             $("#c" + a + b).html("");
+//         }
+//     }
+// }
+
+
+function resetGame() {
+    cells = [];
+    result == "";
+    if($("#radio-2").prop('checked')){
+        againstAI = true;
     }else{
-      onMove = computer;
+        againstAI = false;
     }
-
-
-  intervalId = setInterval(loop, 100);
-
-
-}
-
-function loop(){
-
-
-
-
-	if(onMove === player){
-      isValid = true;
-    }else{
-      computerMove();
-      onMove = player;
+    lastMoveX = 0; //j
+    lastMoveY = 0; //i
+    for (var i = 0; i < gameSize; i++) {
+        cells.push([]);
+        for (var j = 0; j < gameSize; j++) {
+            cells[i].push(-1);
+        }
     }
-
-
-	$(".cell").on("click", function(){
-  if(isValid){
-
-    var sign = player === 0 ? "O" : "X";
-
-    var i = $(this).attr("id")[1]-1;
-    var j = $(this).attr("id")[2]-1;
-    if(cells[i][j] === -1){
-      cells[i][j] = player;
-      $(this).html(sign);
-      isValid = false;
-	  if(!whoWon(cells)){
-		 onMove = computer;
-	  }
-    }
-  }
-});
-
-
-
-    var winner = whoWon(cells);
-    if(winner){
-	  if(winner === "computer"){
-		  alert("You Lost, Better Luck Next Time");
-	  }else{
-		alert("Congratulation!! You Won");
-      }
-	  result = winner;
-    }
-    else if(isTableFull(cells)){
-     result = "Draw";
-      alert("Match Is "+ result);
-    }
-    if(result !== ""){
-	  clearInterval(intervalId);
-	  result = "";
-	  cells = [];
-	  clearTable();
-	  startGame();
-    }
-}
-
-
-function isTableFull(cells){
-  for(var i in cells){
-    for(var j in cells[i]){
-      if(cells[i][j] === -1){
-        return false;
-      }
-    }
-    }
-  return true;
-}
-
-function whoWon(cells){
-  for(var i in cells){
-    if(cells[i][0] !== -1 &&
-       cells[i][1] !== -1 &&
-       cells[i][2] !== -1 &&
-       cells[i][0] === cells[i][1] && cells[i][0] === cells[i][2]){
-      if(cells[i][0] === player){
-        return "player";
-      }
-      else{
-        return "computer";
-      }
-    }
-    }
-  for(var i in cells){
-    if(cells[0][i] !== -1 &&
-       cells[1][i] !== -1 &&
-       cells[2][i] !== -1 &&
-       cells[0][i] === cells[1][i] && cells[0][i] === cells[2][i]){
-      if(cells[0][i] === player){
-        return "player";
-      }
-      else{
-        return "computer";
-      }
-    }
-    }
-
-  if((cells[0][0] !== -1 &&
-      cells[1][1] !== -1 &&
-      cells[2][2] !== -1 &&
-      cells[0][0] === cells[1][1] &&
-    cells[0][0] === cells[2][2]) ||
-    (cells[0][2] !== -1 &&
-     cells[1][1] !== -1 &&
-     cells[2][0] !== -1 &&
-    cells[0][2] === cells[1][1] &&
-    cells[0][2] === cells[2][0])){
-    if(cells[1][1] === player){
-        return "player";
-      }
-      else{
-        return "computer";
-      }
-  }
-
-  return false;
-}
-
-
-
-function computerMove(){
-  var arr = freeCells();
-  var arr2 = bestMove();
-  var sign = computer === 0 ? "O" : "X";
-  var x = Math.round(Math.random()*arr.length);
-
-  if(arr2.length >= 1){
-	  var i = arr2[0];
-	  var j = arr2[1];
-  }else if(arr.length >= 1){
-	  var i = arr[x][0];
-	  var j = arr[x][1];
-  }
-  if((arr.length >= 1 || arr2.length >= 1) && cells[i][j] === -1){
-    var a = parseInt(i) + 1;
-    var b = parseInt(j) + 1;
-    new Promise(function(resolve, reject){
-      $("#c"+a+b).html(sign);
-      resolve();
-    }).then(function(){
-       cells[i++][j++] = computer; })
-	  return 0;
-	}
-
-}
-
-function freeCells(){
-	var arr = [];
-	for(var i in cells){
-		for(var j in cells[i]){
-			if(cells[i][j] === -1){
-				arr.push([i,j]);
-			}
-		}
-	}
-	return arr;
-}
-
-function bestMove(){
-	var computerInLine = 0;
-	var playerInLine = 0;
-	var a = 0;
-	var maybe = null;
-	//check rows
-	for(var i in cells){
-		for(var j in cells[i]){
-			if(cells[i][j] !== -1){
-				if(cells[i][j] === computer){
-					computerInLine++;
-				}else{
-					playerInLine++;
-				}
-			}else{
-				a = j;
-			}
-		}
-		if(computerInLine === 2 && a !== 0){
-			return [i, a];
-		}else if(playerInLine === 2 && a !== 0){
-			maybe = [i, a];
-		}
-		a = 0;
-		computerInLine = 0;
-		playerInLine = 0;
-	}
-
-	//check columns
-
-	for(var j in cells){
-		for(var i in cells[i]){
-			if(cells[i][j] !== -1){
-				if(cells[i][j] === computer){
-					computerInLine++;
-				}else{
-					playerInLine++;
-				}
-			}else{
-				a = i;
-			}
-		}
-		if(computerInLine === 2 && a !== 0){
-			return [a, j];
-		}else if(playerInLine === 2 && a !== 0){
-			maybe = [a, j];
-		}
-		a = 0;
-		computerInLine = 0;
-		playerInLine = 0;
-	}
-
-	//check diagonals
-	var h = 0;
-	a = -1;
-	var b = -1;
-	playerInLine = 0;
-	computerInLine = 0;
-	for(var k = 0; k < 3; k++){
-		if(cells[k][h] !== -1){
-			if(cells[k][h] === computer){
-					computerInLine++;
-				}else{
-					playerInLine++;
-				}
-		}else{
-			a = k;
-			b = h;
-		}
-
-		if(computerInLine === 2 && a !== -1 && b !== -1){
-			return [a, b];
-		}else if(playerInLine === 2 && a !== -1 && b != -1){
-			maybe = [a, b];
-		}
-
-		h++;
-	}
-
-	h = 0;
-	a = -1;
-	b = -1;
-	playerInLine = 0;
-	computerInLine = 0;
-
-	for(var k = 2; k >= 0; k--){
-		if(cells[k][h] !== -1){
-			if(cells[k][h] === computer){
-					computerInLine++;
-				}else{
-					playerInLine++;
-				}
-		}else{
-			a = k;
-			b = h;
-		}
-
-		if(computerInLine === 2 && a !== -1 && b !== -1){
-			return [a, b];
-		}else if(playerInLine === 2 && a !== -1 && b != -1){
-			maybe = [a, b];
-		}
-
-		h++;
-	}
-
-
-
-	if(maybe !== null) return maybe;
-
-	return [];
-}
-
-function clearTable(){
-	for(var a = 1; a<= 3; a++){
-		for(var b = 1; b<=3; b++){
-			$("#c"+a+b).html("");
-		}
-	}
-}
-
-
-function emptyCells(){
-  for(var a = 0; a < 3; a++){
-    cells.push([-1,-1,-1]);
-  }
 }
