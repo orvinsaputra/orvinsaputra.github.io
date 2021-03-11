@@ -85,18 +85,17 @@ $(document).ready(function () {
             }
         });
     })
-
-    $("#tableSize").on("keydown", function(){//just a friendly parameter
-        return false;
-    })
 });
 
 
 function populateTable(tableSize) {
     $('#gameTable').empty();
-    var padSize = ($(window).height() / tableSize) / 2.5;
+    if(tableSize < 3) tableSize = 3; //limit input
+    if(tableSize > 100) tableSize = 100;
+    var padSize = ($(window).height() / tableSize) / 3;
     $("#infoTable").html("Objective : "+pointsToWin+" consecutive color box");
     $('#gameTable').append('<table id="tableStructure"></table>');
+    
     for (var i = 0; i < tableSize; i++) {
         $('#tableStructure').append('<tr class="rowTable"></tr>');
     }
@@ -190,22 +189,20 @@ function startGame() {
                 }
             }
         }
-
     });
 
     var rnd = Math.round(Math.random());
     if (rnd === 1) {
         playerCanMove = true;
-        $("#turnTable").html("Player 1's Turn'");
+        $("#turnTable").html("Player 1's Turn");
     } else {
         if (againstAI) {
             computerMove();
         } else {
             player2CanMove = true;
-            $("#turnTable").html("Player 2's Turn'");
+            $("#turnTable").html("Player 2's Turn");
         }
     }
-
 }
 
 function stopMoving() {
