@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>JavaScript Tic Tac Toe</title>
+    <title>Simple Tic Tac Toe</title>
 
 
 
@@ -16,13 +16,17 @@
 </head>
 
 <body>
+    <div class="bg"></div>
+    <div class="bg bg2"></div>
+    <div class="bg bg3"></div>
     <div id="main">
         <div class="container-fluid">
             <h1 id="turnTable"></h1>
-            <button hidden id="restartButton"><span class="ui-icon ui-icon-seek-first"></span></button>
+            <h2 id="infoTable"></h2>
+            <button hidden title="Restart Game" id="restartButton"><span class="ui-icon ui-icon-gear"></span></button>
         </div>
         
-        <div class="container-fluid" id="gameTable">
+        <div class="" id="gameTable">
             <!-- <div class="row">
                 <div class="col-xs-4 cell" id="c11">
                 </div>
@@ -49,11 +53,11 @@
             </div> -->
         </div>
     </div>
-
-
-    <div id="dialog-confirm" title="Tic Tac Toe | JavaScript">
+    <div id="dialog-confirm" title="Tic Tac Toe | Game Setting">
         <p>Input table size</p>
-        <input type="number" id="tableSize" name="tableSize" min="3" max="100" value="3">
+        <input type="number" id="tableSize" name="tableSize" min="3" max="100" value="3"
+            title="Big table will take some time to load">
+            <!-- <span id="estimateTime"></span> -->
         <hr />
         <fieldset>
             <legend>Select an Opponent: </legend>
@@ -61,8 +65,13 @@
             <input type="radio" name="Opponent" checked id="radio-1" value="player2">
             <label for="radio-2">Computer(Easy)</label>
             <input type="radio" name="Opponent" id="radio-2" value="playercom">
-          </fieldset>
-        <p>To start, Player 1 choose color</p>
+        </fieldset>
+        <p>To start, Player 1 must choose color</p>
+        <p>Who to move first will be random</p>
+        <!-- <div id="myProgress">
+            <div id="myBar"></div>
+          </div> -->
+        <!-- <div id="progressbar"><div class="progress-label">Loading...</div></div> -->
     </div>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
     <script src='https://code.jquery.com/ui/1.11.4/jquery-ui.js'></script>

@@ -4,7 +4,7 @@ var player2CanMove = false;
 var cells = [];
 var player = 1;
 var computer = 0;
-var onMove = 1; // not necessarily need to have initial val
+//var onMove = 1; // not necessarily need to have initial val
 var result = "";
 var againstAI = false;
 var gameSize = 3;
@@ -23,52 +23,6 @@ $(document).ready(function () {
         buttons: {
             "Brown": {
                 click: function () {
-                isX = true;
-                gameSize = $('#tableSize').val();
-                pointsToWin = gameSize > 5 ? 5 : gameSize;
-                // if($("#radio-2").prop('checked')){
-                //     againstAI = true;
-                // }else{
-                //     againstAI = false;
-                // }
-                populateTable(gameSize);
-                $("#restartButton").show();
-                $(this).dialog("close");
-                startGame();
-                },
-                text: 'Brown',
-                class: 'brownCell'
-        },
-            "Green": {
-                click: function () {
-                isX = false;
-                gameSize = $('#tableSize').val();
-                pointsToWin = gameSize > 5 ? 5 : gameSize;
-                // if($("#radio-2").prop('checked')){
-                //     againstAI = true;
-                // }else{
-                //     againstAI = false;
-                // }
-                populateTable(gameSize);
-                $("#restartButton").show();
-                $(this).dialog("close");
-                startGame();
-                },
-                text: 'Green',
-                class: 'greenCell'
-            }
-        }
-    });
-
-    $("#restartButton").click(function(){
-        $("#dialog-confirm").dialog({
-            resizable: false,
-            height: 380,
-            width: 380,
-            modal: true,
-            buttons: {
-                "Brown": {
-                    click: function () {
                     isX = true;
                     gameSize = $('#tableSize').val();
                     pointsToWin = gameSize > 5 ? 5 : gameSize;
@@ -78,15 +32,15 @@ $(document).ready(function () {
                     //     againstAI = false;
                     // }
                     populateTable(gameSize);
+                    $("#restartButton").show();
                     $(this).dialog("close");
-                    result = "";
                     startGame();
-                    },
-                    text: 'Brown',
-                    class: 'brownCell'
+                },
+                text: 'Brown',
+                class: 'brownCell'
             },
-                "Green": {
-                    click: function () {
+            "Green": {
+                click: function () {
                     isX = false;
                     gameSize = $('#tableSize').val();
                     pointsToWin = gameSize > 5 ? 5 : gameSize;
@@ -96,9 +50,55 @@ $(document).ready(function () {
                     //     againstAI = false;
                     // }
                     populateTable(gameSize);
+                    $("#restartButton").show();
                     $(this).dialog("close");
-                    result = "";
                     startGame();
+                },
+                text: 'Green',
+                class: 'greenCell'
+            }
+        }
+    });
+
+    $("#restartButton").click(function () {
+        $("#dialog-confirm").dialog({
+            resizable: false,
+            height: 380,
+            width: 380,
+            modal: true,
+            buttons: {
+                "Brown": {
+                    click: function () {
+                        isX = true;
+                        gameSize = $('#tableSize').val();
+                        pointsToWin = gameSize > 5 ? 5 : gameSize;
+                        // if($("#radio-2").prop('checked')){
+                        //     againstAI = true;
+                        // }else{
+                        //     againstAI = false;
+                        // }
+                        populateTable(gameSize);
+                        $(this).dialog("close");
+                        result = "";
+                        startGame();
+                    },
+                    text: 'Brown',
+                    class: 'brownCell'
+                },
+                "Green": {
+                    click: function () {
+                        isX = false;
+                        gameSize = $('#tableSize').val();
+                        pointsToWin = gameSize > 5 ? 5 : gameSize;
+                        // if($("#radio-2").prop('checked')){
+                        //     againstAI = true;
+                        // }else{
+                        //     againstAI = false;
+                        // }
+                        populateTable(gameSize);
+                        $(this).dialog("close");
+                        result = "";
+                        startGame();
                     },
                     text: 'Green',
                     class: 'greenCell'
@@ -106,7 +106,14 @@ $(document).ready(function () {
             }
         });
     })
+
+    // $("#tableSize").on("change", function(){
+    //     if($(this).val() >= 20){
+    //         $("#estimateTime").html(" Estimated render time "+ Math.floor($(this).val()/7) +"s");
+    //     }
+    // })
 });
+
 
 // function populateTable(tableSize) {
 //     $('#gameTable').empty();
@@ -128,6 +135,8 @@ $(document).ready(function () {
 
 function populateTable(tableSize) {
     $('#gameTable').empty();
+    var padSize = ($(window).height() / tableSize) / 2.5;
+    $("#infoTable").html("Objective : "+pointsToWin+" consecutive color box");
     $('#gameTable').append('<table id="tableStructure"></table>');
     for (var i = 0; i < tableSize; i++) {
         $('#tableStructure').append('<tr class="rowTable"></tr>');
@@ -136,7 +145,7 @@ function populateTable(tableSize) {
         for (var j = 0; j < tableSize; j++) {
 
             var boxDiv = $('<td class="cell"></div>');
-            boxDiv.css('padding', ($(window).height() / tableSize) / 3 + "px");
+            boxDiv.css('padding', padSize + "px");
             $(this).append(boxDiv);
             var boxId = "c" + (index + 1) + (j + 1);
             boxDiv.attr('id', boxId);
@@ -176,7 +185,7 @@ function startGame() {
                 //     onMove = computer;
                 // }
                 validMove = true;
-            }else{
+            } else {
 
             }
         } else if (player2CanMove) {
@@ -203,33 +212,36 @@ function startGame() {
         if (result == "" && validMove) {
             winner = winnerIs();
             if (winner === player) {
-                alert("Player 1 Won");
+                //alert("Player 1 Won");
+                $("#turnTable").html("Player 1 Won!");
                 result = "Player 1";
                 $(".highlighted").css("backdrop-filter", "brightness(0.7)");
                 stopMoving();
             } else if (winner === computer) {
-                alert("Player 2 Won");
+                //alert("Player 2 Won");
+                $("#turnTable").html("Player 2 Won!");
                 result = "Player 2";
                 $(".highlighted").css("backdrop-filter", "brightness(0.7)");
                 stopMoving();
             } else if (isTableFull(cells)) {
                 result = "Draw";
-                alert("Match Is " + result);
+                //alert("Match Is " + result);
+                $("#turnTable").html("It's a Draw");
                 stopMoving();
             } else {
                 if (playerCanMove) {
                     //alert("player move false");
                     playerCanMove = false;
-                    if(againstAI){
+                    if (againstAI) {
                         computerMove();
-                    }else{
+                    } else {
                         player2CanMove = true;
-                        $("#turnTable").html("Player 2's Turn'");
+                        $("#turnTable").html("Player 2's Turn");
                     }
                 } else {
                     playerCanMove = true;
                     player2CanMove = false;
-                    $("#turnTable").html("Player 1's Turn'");
+                    $("#turnTable").html("Player 1's Turn");
                 }
                 //computerMove();
             }
@@ -244,13 +256,13 @@ function startGame() {
         $("#turnTable").html("Player 1's Turn'");
     } else {
         //onMove = computer;
-        if(againstAI){
+        if (againstAI) {
             computerMove();
-        }else{
+        } else {
             player2CanMove = true;
             $("#turnTable").html("Player 2's Turn'");
         }
-        
+
         //computerMove();
     }
 
@@ -399,12 +411,12 @@ function winnerIs() {
         console.log("y " + currentCountY);
         console.log("X " + currentCountX);
         console.log(cells[currentCountY + 1][currentCountX]);
-        $("td[indexi=" + currentCountY+"][indexj="+currentCountX+"]").addClass("highlighted");
+        $("td[indexi=" + currentCountY + "][indexj=" + currentCountX + "]").addClass("highlighted");
         if (cells[currentCountY + 1][currentCountX] == temp) {
             winCounter++;
             currentCountY = currentCountY + 1; //count down
             console.log("count down" + winCounter);
-            $("td[indexi=" + currentCountY+"][indexj="+currentCountX+"]").addClass("highlighted");
+            $("td[indexi=" + currentCountY + "][indexj=" + currentCountX + "]").addClass("highlighted");
         } else {
             match = false;
         }
@@ -434,12 +446,12 @@ function winnerIs() {
     }
     match = true;
     while (currentCountX < gameSize - 1 && match) {
-        $("td[indexi=" + currentCountY+"][indexj="+currentCountX+"]").addClass("highlighted");
+        $("td[indexi=" + currentCountY + "][indexj=" + currentCountX + "]").addClass("highlighted");
         if (cells[currentCountY][currentCountX + 1] == temp) {
             winCounter++;
             currentCountX = currentCountX + 1; //count right
             console.log("count right" + winCounter);
-            $("td[indexi=" + currentCountY+"][indexj="+currentCountX+"]").addClass("highlighted");
+            $("td[indexi=" + currentCountY + "][indexj=" + currentCountX + "]").addClass("highlighted");
         } else {
             match = false;
         }
@@ -473,13 +485,13 @@ function winnerIs() {
     while (currentCountX < gameSize - 1 && currentCountY < gameSize - 1 && match) {
         console.log("y " + currentCountY);
         console.log("x " + currentCountX);
-        $("td[indexi=" + currentCountY+"][indexj="+currentCountX+"]").addClass("highlighted");
+        $("td[indexi=" + currentCountY + "][indexj=" + currentCountX + "]").addClass("highlighted");
         if (cells[currentCountY + 1][currentCountX + 1] == temp) {
             winCounter++;
             currentCountX = currentCountX + 1; //count right
             currentCountY = currentCountY + 1; //count down
             console.log("count down right" + winCounter);
-            $("td[indexi=" + currentCountY+"][indexj="+currentCountX+"]").addClass("highlighted");
+            $("td[indexi=" + currentCountY + "][indexj=" + currentCountX + "]").addClass("highlighted");
         } else {
             match = false;
         }
@@ -511,13 +523,13 @@ function winnerIs() {
     }
     match = true;
     while (currentCountX < gameSize - 1 && currentCountY > 0 && match) {
-        $("td[indexi=" + currentCountY+"][indexj="+currentCountX+"]").addClass("highlighted");
+        $("td[indexi=" + currentCountY + "][indexj=" + currentCountX + "]").addClass("highlighted");
         if (cells[currentCountY - 1][currentCountX + 1] == temp) {
             winCounter++;
             currentCountX = currentCountX + 1; //count right
             currentCountY = currentCountY - 1; //count up
             console.log("count " + winCounter);
-            $("td[indexi=" + currentCountY+"][indexj="+currentCountX+"]").addClass("highlighted");
+            $("td[indexi=" + currentCountY + "][indexj=" + currentCountX + "]").addClass("highlighted");
         } else {
             match = false;
         }
@@ -591,98 +603,102 @@ function computerMove() {
     var sign = player === 0 ? "brownCell" : "greenCell";
     lastMoveY = parseInt(lastMoveY);
     lastMoveX = parseInt(lastMoveX);
-    while(!moved){
+    //To make AI harder with scalable table, simply path thru last player's move, for now it's just experimental
+    while (!moved) {
         var whichWay = Math.floor(Math.random() * 9);
         //console.log($("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]"));
-        if(whichWay == 0){
-            if(lastMoveY > 0 && cells[lastMoveY - 1][lastMoveX] === -1){
+        if (whichWay == 0) {
+            if (lastMoveY > 0 && cells[lastMoveY - 1][lastMoveX] === -1) {
                 cells[lastMoveY - 1][lastMoveX] = computer;
                 lastMoveY = lastMoveY - 1;
-                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                $("td[indexi=" + lastMoveY + "][indexj=" + lastMoveX + "]").addClass(sign);
                 moved = true;
             }
-        }else if(whichWay == 1){
-            if(lastMoveY > 0 && lastMoveX < gameSize - 1 && cells[lastMoveY - 1][lastMoveX + 1] === -1){
+        } else if (whichWay == 1) {
+            if (lastMoveY > 0 && lastMoveX < gameSize - 1 && cells[lastMoveY - 1][lastMoveX + 1] === -1) {
                 cells[lastMoveY - 1][lastMoveX + 1] = computer;
                 lastMoveY = lastMoveY - 1;
                 lastMoveX = lastMoveX + 1;
-                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                $("td[indexi=" + lastMoveY + "][indexj=" + lastMoveX + "]").addClass(sign);
                 moved = true;
             }
-        }else if(whichWay == 2){
-            if(lastMoveX < gameSize - 1 && cells[lastMoveY][lastMoveX + 1] === -1){
+        } else if (whichWay == 2) {
+            if (lastMoveX < gameSize - 1 && cells[lastMoveY][lastMoveX + 1] === -1) {
                 cells[lastMoveY][lastMoveX + 1] = computer;
                 lastMoveX = lastMoveX + 1;
-                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                $("td[indexi=" + lastMoveY + "][indexj=" + lastMoveX + "]").addClass(sign);
                 moved = true;
             }
-        }else if(whichWay == 3){
-            if(lastMoveY < gameSize - 1 && lastMoveX < gameSize - 1 && cells[lastMoveY + 1][lastMoveX + 1] === -1){
+        } else if (whichWay == 3) {
+            if (lastMoveY < gameSize - 1 && lastMoveX < gameSize - 1 && cells[lastMoveY + 1][lastMoveX + 1] === -1) {
                 cells[lastMoveY + 1][lastMoveX + 1] = computer;
                 lastMoveY = lastMoveY + 1;
                 lastMoveX = lastMoveX + 1;
-                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                $("td[indexi=" + lastMoveY + "][indexj=" + lastMoveX + "]").addClass(sign);
                 moved = true;
             }
-        }else if(whichWay == 4){
-            if(lastMoveY < gameSize - 1 && cells[lastMoveY + 1][lastMoveX] === -1){
+        } else if (whichWay == 4) {
+            if (lastMoveY < gameSize - 1 && cells[lastMoveY + 1][lastMoveX] === -1) {
                 cells[lastMoveY + 1][lastMoveX] = computer;
                 lastMoveY = lastMoveY + 1;
-                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                $("td[indexi=" + lastMoveY + "][indexj=" + lastMoveX + "]").addClass(sign);
                 moved = true;
             }
-        }else if(whichWay == 5){
-            if(lastMoveY < gameSize - 1 && lastMoveX > 0 && cells[lastMoveY + 1][lastMoveX - 1] === -1){
+        } else if (whichWay == 5) {
+            if (lastMoveY < gameSize - 1 && lastMoveX > 0 && cells[lastMoveY + 1][lastMoveX - 1] === -1) {
                 cells[lastMoveY + 1][lastMoveX - 1] = computer;
                 lastMoveY = lastMoveY + 1;
                 lastMoveX = lastMoveX - 1;
-                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                $("td[indexi=" + lastMoveY + "][indexj=" + lastMoveX + "]").addClass(sign);
                 moved = true;
             }
-        }else if(whichWay == 6){
-            if(lastMoveX > 0 && cells[lastMoveY][lastMoveX - 1] === -1){
+        } else if (whichWay == 6) {
+            if (lastMoveX > 0 && cells[lastMoveY][lastMoveX - 1] === -1) {
                 cells[lastMoveY][lastMoveX - 1] = computer;
                 lastMoveX = lastMoveX - 1;
-                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                $("td[indexi=" + lastMoveY + "][indexj=" + lastMoveX + "]").addClass(sign);
                 moved = true;
             }
-        }else if(whichWay == 7){
-            if(lastMoveX > 0 && lastMoveY > 0 && cells[lastMoveY - 1][lastMoveX - 1] === -1){
+        } else if (whichWay == 7) {
+            if (lastMoveX > 0 && lastMoveY > 0 && cells[lastMoveY - 1][lastMoveX - 1] === -1) {
                 cells[lastMoveY - 1][lastMoveX - 1] = computer;
                 lastMoveY = lastMoveY - 1;
                 lastMoveX = lastMoveX - 1;
-                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                $("td[indexi=" + lastMoveY + "][indexj=" + lastMoveX + "]").addClass(sign);
                 moved = true;
             }
-        }else if(whichWay > 7){
+        } else if (whichWay > 7) {
             var arr = freeCells();
             var x = Math.floor(Math.random() * arr.length);
-            console.log("freecell "+x);
+            //console.log("freecell "+x);
             if (arr.length >= 1) { // random move
                 var i = arr[x][0];
                 var j = arr[x][1];
-                console.log("random "+ i);
-                console.log("random "+ j);
+                //console.log("random "+ i);
+                //console.log("random "+ j);
                 cells[i][j] = computer;
                 lastMoveY = i;
                 lastMoveX = j;
-                $("td[indexi=" + lastMoveY+"][indexj="+lastMoveX+"]").addClass(sign);
+                $("td[indexi=" + lastMoveY + "][indexj=" + lastMoveX + "]").addClass(sign);
                 moved = true;
             }
         }
 
-        
+
     }
-    
+
     winner = winnerIs();
     if (winner === computer) {
-        alert("You Lost, Better Luck Next Time");
-        result = "Computer Won";
+        //alert("You Lost, Better Luck Next Time");
+        $("#turnTable").html("Computer Won!");
+        result = "Computer";
     } else if (isTableFull(cells)) {
         result = "Draw";
-        alert("Match Is " + result);
+        $("#turnTable").html("It's a Draw");
+        //alert("Match Is " + result);
     } else {
         playerCanMove = true;
+        $("#turnTable").html("Player 1's Turn");
     }
 
 
@@ -737,118 +753,118 @@ function freeCells() {
     return arr;
 }
 
-function bestMove() { // TODO change the '2' counter to highest counter
-    var computerInLine = 0;
-    var playerInLine = 0;
-    var a = 0;
-    var maybe = null;
-    //check rows
-    for (var i in cells) {
-        for (var j in cells[i]) {
-            if (cells[i][j] !== -1) {
-                if (cells[i][j] === computer) {
-                    computerInLine++;
-                } else {
-                    playerInLine++;
-                }
-            } else {
-                a = j;
-            }
-        }
-        if (computerInLine === 2 && a !== 0) {
-            return [i, a];
-        } else if (playerInLine === 2 && a !== 0) {
-            maybe = [i, a];
-        }
-        a = 0;
-        computerInLine = 0;
-        playerInLine = 0;
-    }
+// function bestMove() { // TODO change the '2' counter to highest counter
+//     var computerInLine = 0;
+//     var playerInLine = 0;
+//     var a = 0;
+//     var maybe = null;
+//     //check rows
+//     for (var i in cells) {
+//         for (var j in cells[i]) {
+//             if (cells[i][j] !== -1) {
+//                 if (cells[i][j] === computer) {
+//                     computerInLine++;
+//                 } else {
+//                     playerInLine++;
+//                 }
+//             } else {
+//                 a = j;
+//             }
+//         }
+//         if (computerInLine === 2 && a !== 0) {
+//             return [i, a];
+//         } else if (playerInLine === 2 && a !== 0) {
+//             maybe = [i, a];
+//         }
+//         a = 0;
+//         computerInLine = 0;
+//         playerInLine = 0;
+//     }
 
-    //check columns
+//     //check columns
 
-    for (var j in cells) {
-        for (var i in cells[i]) {
-            if (cells[i][j] !== -1) {
-                if (cells[i][j] === computer) {
-                    computerInLine++;
-                } else {
-                    playerInLine++;
-                }
-            } else {
-                a = i;
-            }
-        }
-        if (computerInLine === 2 && a !== 0) {
-            return [a, j];
-        } else if (playerInLine === 2 && a !== 0) {
-            maybe = [a, j];
-        }
-        a = 0;
-        computerInLine = 0;
-        playerInLine = 0;
-    }
+//     for (var j in cells) {
+//         for (var i in cells[i]) {
+//             if (cells[i][j] !== -1) {
+//                 if (cells[i][j] === computer) {
+//                     computerInLine++;
+//                 } else {
+//                     playerInLine++;
+//                 }
+//             } else {
+//                 a = i;
+//             }
+//         }
+//         if (computerInLine === 2 && a !== 0) {
+//             return [a, j];
+//         } else if (playerInLine === 2 && a !== 0) {
+//             maybe = [a, j];
+//         }
+//         a = 0;
+//         computerInLine = 0;
+//         playerInLine = 0;
+//     }
 
-    //check diagonals
-    var h = 0;
-    a = -1;
-    var b = -1;
-    playerInLine = 0;
-    computerInLine = 0;
-    for (var k = 0; k < 3; k++) {
-        if (cells[k][h] !== -1) {
-            if (cells[k][h] === computer) {
-                computerInLine++;
-            } else {
-                playerInLine++;
-            }
-        } else {
-            a = k;
-            b = h;
-        }
+//     //check diagonals
+//     var h = 0;
+//     a = -1;
+//     var b = -1;
+//     playerInLine = 0;
+//     computerInLine = 0;
+//     for (var k = 0; k < 3; k++) {
+//         if (cells[k][h] !== -1) {
+//             if (cells[k][h] === computer) {
+//                 computerInLine++;
+//             } else {
+//                 playerInLine++;
+//             }
+//         } else {
+//             a = k;
+//             b = h;
+//         }
 
-        if (computerInLine === 2 && a !== -1 && b !== -1) {
-            return [a, b];
-        } else if (playerInLine === 2 && a !== -1 && b != -1) {
-            maybe = [a, b];
-        }
+//         if (computerInLine === 2 && a !== -1 && b !== -1) {
+//             return [a, b];
+//         } else if (playerInLine === 2 && a !== -1 && b != -1) {
+//             maybe = [a, b];
+//         }
 
-        h++;
-    }
+//         h++;
+//     }
 
-    h = 0;
-    a = -1;
-    b = -1;
-    playerInLine = 0;
-    computerInLine = 0;
+//     h = 0;
+//     a = -1;
+//     b = -1;
+//     playerInLine = 0;
+//     computerInLine = 0;
 
-    for (var k = 2; k >= 0; k--) {
-        if (cells[k][h] !== -1) {
-            if (cells[k][h] === computer) {
-                computerInLine++;
-            } else {
-                playerInLine++;
-            }
-        } else {
-            a = k;
-            b = h;
-        }
+//     for (var k = 2; k >= 0; k--) {
+//         if (cells[k][h] !== -1) {
+//             if (cells[k][h] === computer) {
+//                 computerInLine++;
+//             } else {
+//                 playerInLine++;
+//             }
+//         } else {
+//             a = k;
+//             b = h;
+//         }
 
-        if (computerInLine === 2 && a !== -1 && b !== -1) {
-            return [a, b];
-        } else if (playerInLine === 2 && a !== -1 && b != -1) {
-            maybe = [a, b];
-        }
+//         if (computerInLine === 2 && a !== -1 && b !== -1) {
+//             return [a, b];
+//         } else if (playerInLine === 2 && a !== -1 && b != -1) {
+//             maybe = [a, b];
+//         }
 
-        h++;
-    }
+//         h++;
+//     }
 
 
 
-    if (maybe !== null) return maybe;
+//     if (maybe !== null) return maybe;
 
-    return [];
-}
+//     return [];
+// }
 
 // function clearTable() { //TODO DELETE CHILD
 //     for (var a = 1; a <= 3; a++) {
@@ -862,9 +878,9 @@ function bestMove() { // TODO change the '2' counter to highest counter
 function resetGame() {
     cells = [];
     result == "";
-    if($("#radio-2").prop('checked')){
+    if ($("#radio-2").prop('checked')) {
         againstAI = true;
-    }else{
+    } else {
         againstAI = false;
     }
     lastMoveX = 0; //j
